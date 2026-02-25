@@ -17,6 +17,14 @@ const int      topk        = 100;
 const float    score_thres = 0.25f;
 const float    iou_thres   = 0.65f;
 
+/**
+ * @brief Program entry point for loading a TensorRT engine, running inference, and writing output.
+ *
+ * @param argc Argument count. Requires at least engine path and input path.
+ * @param argv CLI args: [engine_file] [image_or_video_path] [--no-gui optional_output_path].
+ *
+ * @return -1 on invalid arguments or unrecoverable setup/class-count errors, 0 on normal completion.
+ */
 int main(int argc, char** argv)
 {
     float    f;

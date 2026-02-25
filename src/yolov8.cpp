@@ -14,9 +14,18 @@
 //using namespace det;
 //----------------------------------------------------------------------------------------
 const std::vector<std::string> class_names = {
-    "yolo26-aphid"
+    "aphid"
 };
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Construct detector state from a serialized TensorRT engine file.
+ *
+ * Loads the engine, creates TensorRT runtime/context objects, creates a CUDA stream,
+ * and discovers input/output tensor metadata.
+ *
+ * @param engine_file_path Path to the TensorRT .engine file.
+ * @return No explicit return value (constructor).
+ */
 YOLOv8::YOLOv8(const std::string& engine_file_path)
 {
     // Read engine file
@@ -78,6 +87,11 @@ YOLOv8::YOLOv8(const std::string& engine_file_path)
 
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Release TensorRT resources, CUDA stream, and allocated host/device buffers.
+ *
+ * @return No explicit return value (destructor).
+ */
 YOLOv8::~YOLOv8()
 {
     delete this->context;
@@ -93,6 +107,12 @@ YOLOv8::~YOLOv8()
     }
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Allocate inference buffers, bind tensor addresses, and optionally warm up the pipeline.
+ *
+ * @param warmup If true, runs several warmup inferences after setup.
+ * @return void
+ */
 void YOLOv8::MakePipe(bool warmup)
 {
 #ifndef CUDART_VERSION
@@ -176,6 +196,17 @@ void YOLOv8::MakePipe(bool warmup)
     }
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Resize/pad input image with aspect-ratio preservation and convert to network blob.
+ *
+ * Updates preprocessing metadata (`pparam`) used later to map detections back to the
+ * original image coordinate space.
+ *
+ * @param image Original input image.
+ * @param out Output blob in NCHW float format.
+ * @param size Target model input size (width/height).
+ * @return void
+ */
 void YOLOv8::Letterbox(const cv::Mat& image, cv::Mat& out, cv::Size& size)
 {
     const float inp_h  = size.height;
@@ -215,6 +246,12 @@ void YOLOv8::Letterbox(const cv::Mat& image, cv::Mat& out, cv::Size& size)
     this->pparam.width  = width;
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Preprocess image using model-derived input size and upload to GPU input buffer.
+ *
+ * @param image Input image to preprocess and upload.
+ * @return void
+ */
 void YOLOv8::CopyFromMat(const cv::Mat& image)
 {
     cv::Mat nchw;
@@ -235,6 +272,13 @@ void YOLOv8::CopyFromMat(const cv::Mat& image)
     CHECK(cudaMemcpyAsync(this->device_ptrs[0], nchw.ptr<float>(), bytes, cudaMemcpyHostToDevice, this->stream));
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Preprocess image using explicit input size and upload to GPU input buffer.
+ *
+ * @param image Input image to preprocess and upload.
+ * @param size Desired input width/height.
+ * @return void
+ */
 void YOLOv8::CopyFromMat(const cv::Mat& image, cv::Size& size)
 {
     cv::Mat nchw;
@@ -249,6 +293,11 @@ void YOLOv8::CopyFromMat(const cv::Mat& image, cv::Size& size)
     CHECK(cudaMemcpyAsync(this->device_ptrs[0], nchw.ptr<float>(), bytes, cudaMemcpyHostToDevice, this->stream));
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Run one TensorRT inference and copy output tensors from device to host buffers.
+ *
+ * @return void
+ */
 void YOLOv8::Infer()
 {
     // On TRT10 use enqueueV3 (name-based tensors still require raw device pointer array)
@@ -263,27 +312,44 @@ void YOLOv8::Infer()
     CHECK(cudaStreamSynchronize(this->stream));
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Infer class count for YOLO26 end-to-end tuple outputs.
+ *
+ * @return Detected class count, or 0 when class count cannot be inferred.
+ */
 int YOLOv8::GetNumClasses() const
 {
-    if (this->output_bindings.empty()) return 0;
-    const auto& dims = (this->primary_output_binding_index >= 0) ? this->primary_output_dims : this->output_bindings[0].dims;
-    if (dims.nbDims >= 2) {
-        const int tuple_size = static_cast<int>(dims.d[dims.nbDims - 1]);
-        if (tuple_size >= 6) return static_cast<int>(class_names.size());
+    if (this->primary_output_binding_index < 0 ||
+        this->primary_output_binding_index >= static_cast<int>(this->output_bindings.size())) {
+        return 0;
     }
 
-    if (this->output_bindings.size() >= 4) {
-        return static_cast<int>(class_names.size());
-    }
-    if (dims.nbDims < 3) return 0;
+    const auto& dims = this->primary_output_dims;
+    if (dims.nbDims < 2) return 0;
 
-    const int num_channels = dims.d[1];
-    if (num_channels <= 4) return 0;
-    return num_channels - 4;
+    const int tuple_size = static_cast<int>(dims.d[dims.nbDims - 1]);
+    if (tuple_size < 6) return 0;
+
+    return static_cast<int>(class_names.size());
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Convert raw model outputs into filtered detections.
+ *
+ * Expects tuple-style YOLO26 end-to-end outputs:
+ * (x1, y1, x2, y2, confidence, class_id[, extra...]).
+ *
+ * @param objs Output detection list to populate.
+ * @param score_thres Minimum confidence threshold.
+ * @param iou_thres Unused for end-to-end YOLO26 output (NMS handled by model/export).
+ * @param topk Maximum number of detections to keep.
+ * @param num_labels Unused for end-to-end YOLO26 output.
+ * @return void
+ */
 void YOLOv8::PostProcess(std::vector<Object>& objs, float score_thres, float iou_thres, int topk, int num_labels)
 {
+    (void)iou_thres;
+    (void)num_labels;
     objs.clear();
     assert(this->output_bindings.size() > 0);
 
@@ -293,116 +359,57 @@ void YOLOv8::PostProcess(std::vector<Object>& objs, float score_thres, float iou
     auto& height = this->pparam.height;
     auto& ratio  = this->pparam.ratio;
 
-    // YOLO26 end-to-end path: parse detections directly from output tuples
-    // (x1, y1, x2, y2, confidence, class_id[, extra]).
-    if (this->primary_output_binding_index >= 0 &&
-        this->primary_output_binding_index < static_cast<int>(this->output_bindings.size()) &&
-        this->primary_output_binding_index < static_cast<int>(this->host_ptrs.size())) {
-        const auto& dims = this->primary_output_dims;
-        if (dims.nbDims >= 2) {
-            const int tuple_size = static_cast<int>(dims.d[dims.nbDims - 1]);
-            if (tuple_size >= 6) {
-                if (this->primary_output_dtype != nvinfer1::DataType::kFLOAT) {
-                    // TODO: Add non-float tuple parsing if model outputs a different data type.
-                    return;
-                }
-                if (this->primary_output_elements == 0) {
-                    // TODO: Handle unresolved dynamic output dimensions.
-                    return;
-                }
-
-                const size_t det_count = this->primary_output_elements / static_cast<size_t>(tuple_size);
-                const float* dets_ptr = static_cast<float*>(this->host_ptrs[this->primary_output_binding_index]);
-                for (size_t i = 0; i < det_count; ++i) {
-                    const float* row = dets_ptr + i * static_cast<size_t>(tuple_size);
-                    const float score = row[4];
-                    if (score < score_thres) continue;
-
-                    Object obj;
-                    const float x0 = clamp((row[0] - dw) * ratio, 0.f, width);
-                    const float y0 = clamp((row[1] - dh) * ratio, 0.f, height);
-                    const float x1 = clamp((row[2] - dw) * ratio, 0.f, width);
-                    const float y1 = clamp((row[3] - dh) * ratio, 0.f, height);
-                    obj.rect.x = x0;
-                    obj.rect.y = y0;
-                    obj.rect.width = std::max(0.f, x1 - x0);
-                    obj.rect.height = std::max(0.f, y1 - y0);
-                    obj.prob = score;
-                    obj.label = static_cast<int>(row[5]);
-                    objs.push_back(obj);
-                    if ((int)objs.size() >= topk) break;
-                }
-                return;
-            }
-        }
-    }
-
-    // Raw head layout fallback: [1, 4 + num_classes, num_anchors]
-    int num_channels = this->output_bindings[0].dims.nbDims > 1 ? this->output_bindings[0].dims.d[1] : 85;  // fallback
-    auto num_anchors = this->output_bindings[0].dims.nbDims > 2 ? this->output_bindings[0].dims.d[2] : (this->output_bindings[0].size / num_channels);
-    const int available_labels = std::max(0, num_channels - 4);
-    const int class_count = std::min(num_labels, available_labels);
-    if (class_count <= 0) {
+    if (this->primary_output_binding_index < 0 ||
+        this->primary_output_binding_index >= static_cast<int>(this->output_bindings.size()) ||
+        this->primary_output_binding_index >= static_cast<int>(this->host_ptrs.size())) {
         return;
     }
 
-    std::vector<cv::Rect> bboxes;
-    std::vector<float>    scores;
-    std::vector<int>      labels;
-    std::vector<int>      indices;
-
-    cv::Mat output = cv::Mat(num_channels, num_anchors, CV_32F, static_cast<float*>(this->host_ptrs[0]));
-    output         = output.t();
-    for (int i = 0; i < num_anchors; i++) {
-        auto  row_ptr    = output.row(i).ptr<float>();
-        auto  bboxes_ptr = row_ptr;
-        auto  scores_ptr = row_ptr + 4;
-        auto  max_s_ptr  = std::max_element(scores_ptr, scores_ptr + class_count);
-        float score      = *max_s_ptr;
-        if (score > score_thres) {
-            float x = *bboxes_ptr++ - dw;
-            float y = *bboxes_ptr++ - dh;
-            float w = *bboxes_ptr++;
-            float h = *bboxes_ptr;
-
-            float x0 = clamp((x - 0.5f * w) * ratio, 0.f, width);
-            float y0 = clamp((y - 0.5f * h) * ratio, 0.f, height);
-            float x1 = clamp((x + 0.5f * w) * ratio, 0.f, width);
-            float y1 = clamp((y + 0.5f * h) * ratio, 0.f, height);
-
-            int label = max_s_ptr - scores_ptr;
-            cv::Rect_<float> bbox;
-            bbox.x      = x0;
-            bbox.y      = y0;
-            bbox.width  = x1 - x0;
-            bbox.height = y1 - y0;
-
-            bboxes.push_back(bbox);
-            labels.push_back(label);
-            scores.push_back(score);
-        }
+    const auto& dims = this->primary_output_dims;
+    if (dims.nbDims < 2) {
+        return;
+    }
+    const int tuple_size = static_cast<int>(dims.d[dims.nbDims - 1]);
+    if (tuple_size < 6) {
+        return;
+    }
+    if (this->primary_output_dtype != nvinfer1::DataType::kFLOAT) {
+        return;
+    }
+    if (this->primary_output_elements == 0) {
+        return;
     }
 
-#ifdef BATCHED_NMS
-    cv::dnn::NMSBoxesBatched(bboxes, scores, labels, score_thres, iou_thres, indices);
-#else
-    cv::dnn::NMSBoxes(bboxes, scores, score_thres, iou_thres, indices);
-#endif
+    const size_t det_count = this->primary_output_elements / static_cast<size_t>(tuple_size);
+    const float* dets_ptr = static_cast<float*>(this->host_ptrs[this->primary_output_binding_index]);
+    for (size_t i = 0; i < det_count; ++i) {
+        const float* row = dets_ptr + i * static_cast<size_t>(tuple_size);
+        const float score = row[4];
+        if (score < score_thres) continue;
 
-    int cnt = 0;
-    for (auto& i : indices) {
-        if (cnt >= topk) {
-            break;
-        }
         Object obj;
-        obj.rect  = bboxes[i];
-        obj.prob  = scores[i];
-        obj.label = labels[i];
+        const float x0 = clamp((row[0] - dw) * ratio, 0.f, width);
+        const float y0 = clamp((row[1] - dh) * ratio, 0.f, height);
+        const float x1 = clamp((row[2] - dw) * ratio, 0.f, width);
+        const float y1 = clamp((row[3] - dh) * ratio, 0.f, height);
+        obj.rect.x = x0;
+        obj.rect.y = y0;
+        obj.rect.width = std::max(0.f, x1 - x0);
+        obj.rect.height = std::max(0.f, y1 - y0);
+        obj.prob = score;
+        obj.label = static_cast<int>(row[5]);
         objs.push_back(obj);
-        cnt += 1;
+        if ((int)objs.size() >= topk) break;
     }
 }
 //----------------------------------------------------------------------------------------
+/**
+ * @brief Draw detection boxes and class/confidence labels onto a BGR image.
+ *
+ * @param bgr Image to annotate in place.
+ * @param objs Detection objects to render.
+ * @return void
+ */
 void YOLOv8::DrawObjects(cv::Mat& bgr, const std::vector<Object>& objs)
 {
     char text[256];
