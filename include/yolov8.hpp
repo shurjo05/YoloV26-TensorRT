@@ -22,6 +22,7 @@ class YOLOv8 {
         void CopyFromMat(const cv::Mat& image, cv::Size& size);
         void Letterbox(const cv::Mat& image, cv::Mat& out, cv::Size& size);
         void Infer();
+        int GetNumClasses() const;
         void PostProcess(std::vector<Object>& objs, float score_thres, float iou_thres, int topk, int num_labels  = 80);
         void DrawObjects(cv::Mat& bgr, const std::vector<Object>& objs);
 
@@ -49,6 +50,10 @@ class YOLOv8 {
         int num_iotensors = 0;
         int num_inputs = 0;
         int num_outputs = 0;
+        int primary_output_binding_index = -1;
+        nvinfer1::Dims primary_output_dims{};
+        nvinfer1::DataType primary_output_dtype = nvinfer1::DataType::kFLOAT;
+        size_t primary_output_elements = 0;
 
         PreParam pparam;
 

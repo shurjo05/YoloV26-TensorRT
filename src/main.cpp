@@ -13,7 +13,6 @@ using namespace cv;
 //#define VIDEO
 
 cv::Size       im_size(640, 640);
-const int      num_labels  = 80;
 const int      topk        = 100;
 const float    score_thres = 0.25f;
 const float    iou_thres   = 0.65f;
@@ -32,6 +31,15 @@ int main(int argc, char** argv)
     }
     const string engine_file_path = argv[1];
     const string imagepath = argv[2];
+    string output_path = "out.jpg";
+    for (int argi = 3; argi < argc; ++argi) {
+        if (string(argv[argi]) == "--no-gui") {
+            if (argi + 1 < argc && string(argv[argi + 1]).rfind("--", 0) != 0) {
+                output_path = argv[argi + 1];
+            }
+            break;
+        }
+    }
 
     for(i=0;i<16;i++) FPS[i]=0.0;
 
@@ -46,6 +54,13 @@ int main(int argc, char** argv)
     cout << "\rLoading the pipe... " << string(10, ' ')<< "\n\r" ;
     cout << endl;
     yolov8->MakePipe(true);
+    const int num_labels = yolov8->GetNumClasses();
+    if (num_labels <= 0) {
+        cerr << "ERROR: Could not infer class count from engine output." << endl;
+        delete yolov8;
+        return -1;
+    }
+    cout << "Detected class count from engine: " << num_labels << endl;
 
 #ifdef VIDEO
     VideoCapture cap(imagepath);
@@ -64,6 +79,10 @@ int main(int argc, char** argv)
         }
 #else
         image = cv::imread(imagepath);
+        if (image.empty()) {
+            cerr << "ERROR: Unable to read input image " << imagepath << endl;
+            break;
+        }
 #endif
         yolov8->CopyFromMat(image, im_size);
 
@@ -82,13 +101,14 @@ int main(int argc, char** argv)
         for(f=0.0, i=0;i<16;i++){ f+=FPS[i]; }
         putText(image, cv::format("FPS %0.2f", f/16),cv::Point(10,20),cv::FONT_HERSHEY_SIMPLEX,0.6, cv::Scalar(0, 0, 255));
 
-        //show output
-        imshow("Jetson Orin Nano- 8 Mb RAM", image);
-        char esc = cv::waitKey(1);
-        if(esc == 27) break;
-//      imwrite("./out.jpg", image);
+        // save output image (headless-only mode)
+        if (!imwrite(output_path, image)) {
+            cerr << "ERROR: Unable to write output image " << output_path << endl;
+            break;
+        }
+        cout << "Saved output image to " << output_path << endl;
+        break;
     }
-    cv::destroyAllWindows();
 
     delete yolov8;
 

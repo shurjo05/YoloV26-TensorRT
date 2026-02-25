@@ -7,20 +7,14 @@
 #include "yolov8.hpp"
 #include <cuda_runtime_api.h>
 #include <cuda.h>
+#include <string>
+#include <vector>
 
 //----------------------------------------------------------------------------------------
 //using namespace det;
 //----------------------------------------------------------------------------------------
-const char* class_names[] = {
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
-    "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
-    "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
-    "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
-    "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
-    "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone",
-    "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear",
-    "hair drier", "toothbrush"
+const std::vector<std::string> class_names = {
+    "yolo26-aphid"
 };
 //----------------------------------------------------------------------------------------
 YOLOv8::YOLOv8(const std::string& engine_file_path)
@@ -63,6 +57,7 @@ YOLOv8::YOLOv8(const std::string& engine_file_path)
         det::Binding b;
         b.name = std::string(tname);
         b.dsize = static_cast<size_t>(type_to_size(dtype));
+        b.dtype = dtype;
         b.dims = dims;
         b.size = get_size_by_dims_local(dims);
 
@@ -70,6 +65,12 @@ YOLOv8::YOLOv8(const std::string& engine_file_path)
             input_bindings.push_back(b);
             ++this->num_inputs;
         } else {
+            if (this->primary_output_binding_index < 0) {
+                this->primary_output_binding_index = this->num_outputs;
+                this->primary_output_dims = dims;
+                this->primary_output_dtype = dtype;
+                this->primary_output_elements = b.size;
+            }
             output_bindings.push_back(b);
             ++this->num_outputs;
         }
@@ -112,6 +113,21 @@ void YOLOv8::MakePipe(bool warmup)
     for (auto& outb : this->output_bindings) {
         void* d_ptr = nullptr;
         void* h_ptr = nullptr;
+        nvinfer1::Dims runtime_dims = this->context->getTensorShape(outb.name.c_str());
+        size_t runtime_size = 0;
+        bool runtime_dims_valid = true;
+        for (int i = 0; i < runtime_dims.nbDims; ++i) {
+            const int d = static_cast<int>(runtime_dims.d[i]);
+            if (d <= 0) {
+                runtime_dims_valid = false;
+                break;
+            }
+            runtime_size = (runtime_size == 0) ? static_cast<size_t>(d) : (runtime_size * static_cast<size_t>(d));
+        }
+        if (runtime_dims_valid && runtime_size > 0) {
+            outb.dims = runtime_dims;
+            outb.size = runtime_size;
+        }
         size_t bytes = outb.size * outb.dsize;
 #if (CUDART_VERSION < 11000)
         CHECK(cudaMalloc(&d_ptr, bytes));
@@ -121,6 +137,12 @@ void YOLOv8::MakePipe(bool warmup)
         CHECK(cudaHostAlloc(&h_ptr, bytes, 0));
         this->device_ptrs.push_back(d_ptr);
         this->host_ptrs.push_back(h_ptr);
+
+        if (this->primary_output_binding_index >= 0 && (&outb - &this->output_bindings[0]) == this->primary_output_binding_index) {
+            this->primary_output_dims = outb.dims;
+            this->primary_output_dtype = outb.dtype;
+            this->primary_output_elements = outb.size;
+        }
     }
 
     // Map buffers to tensor names (required for TRT10)
@@ -241,18 +263,88 @@ void YOLOv8::Infer()
     CHECK(cudaStreamSynchronize(this->stream));
 }
 //----------------------------------------------------------------------------------------
+int YOLOv8::GetNumClasses() const
+{
+    if (this->output_bindings.empty()) return 0;
+    const auto& dims = (this->primary_output_binding_index >= 0) ? this->primary_output_dims : this->output_bindings[0].dims;
+    if (dims.nbDims >= 2) {
+        const int tuple_size = static_cast<int>(dims.d[dims.nbDims - 1]);
+        if (tuple_size >= 6) return static_cast<int>(class_names.size());
+    }
+
+    if (this->output_bindings.size() >= 4) {
+        return static_cast<int>(class_names.size());
+    }
+    if (dims.nbDims < 3) return 0;
+
+    const int num_channels = dims.d[1];
+    if (num_channels <= 4) return 0;
+    return num_channels - 4;
+}
+//----------------------------------------------------------------------------------------
 void YOLOv8::PostProcess(std::vector<Object>& objs, float score_thres, float iou_thres, int topk, int num_labels)
 {
     objs.clear();
     assert(this->output_bindings.size() > 0);
-    auto num_channels = this->output_bindings[0].dims.nbDims > 1 ? this->output_bindings[0].dims.d[1] : 85;  // fallback
-    auto num_anchors = this->output_bindings[0].dims.nbDims > 2 ? this->output_bindings[0].dims.d[2] : (this->output_bindings[0].size / num_channels);
 
     auto& dw     = this->pparam.dw;
     auto& dh     = this->pparam.dh;
     auto& width  = this->pparam.width;
     auto& height = this->pparam.height;
     auto& ratio  = this->pparam.ratio;
+
+    // YOLO26 end-to-end path: parse detections directly from output tuples
+    // (x1, y1, x2, y2, confidence, class_id[, extra]).
+    if (this->primary_output_binding_index >= 0 &&
+        this->primary_output_binding_index < static_cast<int>(this->output_bindings.size()) &&
+        this->primary_output_binding_index < static_cast<int>(this->host_ptrs.size())) {
+        const auto& dims = this->primary_output_dims;
+        if (dims.nbDims >= 2) {
+            const int tuple_size = static_cast<int>(dims.d[dims.nbDims - 1]);
+            if (tuple_size >= 6) {
+                if (this->primary_output_dtype != nvinfer1::DataType::kFLOAT) {
+                    // TODO: Add non-float tuple parsing if model outputs a different data type.
+                    return;
+                }
+                if (this->primary_output_elements == 0) {
+                    // TODO: Handle unresolved dynamic output dimensions.
+                    return;
+                }
+
+                const size_t det_count = this->primary_output_elements / static_cast<size_t>(tuple_size);
+                const float* dets_ptr = static_cast<float*>(this->host_ptrs[this->primary_output_binding_index]);
+                for (size_t i = 0; i < det_count; ++i) {
+                    const float* row = dets_ptr + i * static_cast<size_t>(tuple_size);
+                    const float score = row[4];
+                    if (score < score_thres) continue;
+
+                    Object obj;
+                    const float x0 = clamp((row[0] - dw) * ratio, 0.f, width);
+                    const float y0 = clamp((row[1] - dh) * ratio, 0.f, height);
+                    const float x1 = clamp((row[2] - dw) * ratio, 0.f, width);
+                    const float y1 = clamp((row[3] - dh) * ratio, 0.f, height);
+                    obj.rect.x = x0;
+                    obj.rect.y = y0;
+                    obj.rect.width = std::max(0.f, x1 - x0);
+                    obj.rect.height = std::max(0.f, y1 - y0);
+                    obj.prob = score;
+                    obj.label = static_cast<int>(row[5]);
+                    objs.push_back(obj);
+                    if ((int)objs.size() >= topk) break;
+                }
+                return;
+            }
+        }
+    }
+
+    // Raw head layout fallback: [1, 4 + num_classes, num_anchors]
+    int num_channels = this->output_bindings[0].dims.nbDims > 1 ? this->output_bindings[0].dims.d[1] : 85;  // fallback
+    auto num_anchors = this->output_bindings[0].dims.nbDims > 2 ? this->output_bindings[0].dims.d[2] : (this->output_bindings[0].size / num_channels);
+    const int available_labels = std::max(0, num_channels - 4);
+    const int class_count = std::min(num_labels, available_labels);
+    if (class_count <= 0) {
+        return;
+    }
 
     std::vector<cv::Rect> bboxes;
     std::vector<float>    scores;
@@ -265,7 +357,7 @@ void YOLOv8::PostProcess(std::vector<Object>& objs, float score_thres, float iou
         auto  row_ptr    = output.row(i).ptr<float>();
         auto  bboxes_ptr = row_ptr;
         auto  scores_ptr = row_ptr + 4;
-        auto  max_s_ptr  = std::max_element(scores_ptr, scores_ptr + num_labels);
+        auto  max_s_ptr  = std::max_element(scores_ptr, scores_ptr + class_count);
         float score      = *max_s_ptr;
         if (score > score_thres) {
             float x = *bboxes_ptr++ - dw;
@@ -318,7 +410,10 @@ void YOLOv8::DrawObjects(cv::Mat& bgr, const std::vector<Object>& objs)
     for (auto& obj : objs) {
         cv::rectangle(bgr, obj.rect, cv::Scalar(255, 0, 0));
 
-        sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob * 100);
+        std::string label_name = (obj.label >= 0 && obj.label < (int)class_names.size())
+                                 ? class_names[obj.label]
+                                 : ("class_" + std::to_string(obj.label));
+        sprintf(text, "%s %.1f%%", label_name.c_str(), obj.prob * 100);
 
         int      baseLine   = 0;
         cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
