@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build",
+  "command": "/usr/bin/aarch64-linux-gnu-g++ -DBATCHED_NMS -I/usr/local/cuda-12.6/include -I/usr/include/aarch-linux-gnu -I/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/include -isystem /usr/include/opencv4  -std=c++14 -O3 -O3 -DNDEBUG -std=gnu++14 -o CMakeFiles/YoloV8rt.dir/src/main.cpp.o -c /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/src/main.cpp",
+  "file": "/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/src/main.cpp"
+},
+{
+  "directory": "/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build",
+  "command": "/usr/bin/aarch64-linux-gnu-g++ -DBATCHED_NMS -I/usr/local/cuda-12.6/include -I/usr/include/aarch-linux-gnu -I/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/include -isystem /usr/include/opencv4  -std=c++14 -O3 -O3 -DNDEBUG -std=gnu++14 -o CMakeFiles/YoloV8rt.dir/src/yolov8.cpp.o -c /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/src/yolov8.cpp",
+  "file": "/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/src/yolov8.cpp"
+}
+]
