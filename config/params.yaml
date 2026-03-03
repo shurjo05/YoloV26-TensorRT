@@ -1,6 +1,6 @@
 yolo_detector_node:
   ros__parameters:
-    engine_file_path: "/path/to/yolo26.engine"
+    engine_file_path: "/home/farms/orin_ssd/aphid_object_detection/yolo26n-aphid.engine"
     confidence_threshold: 0.25
     iou_threshold: 0.65
     input_width: 640

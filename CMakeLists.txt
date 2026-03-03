@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-set(CMAKE_CUDA_ARCHITECTURES 60 61 62 70 72 75 86 89 90)
+set(CMAKE_CUDA_ARCHITECTURES 60 61 62 70 72 75 86 87 89 90)
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 
 project(yolo26_tensorrt LANGUAGES CXX CUDA)
@@ -9,8 +9,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 
@@ -34,7 +34,7 @@ message(STATUS "CUDA Headers: \n${CUDA_INCLUDE_DIRS}\n")
 find_package(OpenCV REQUIRED)
 
 # TensorRT
-set(TensorRT_INCLUDE_DIRS /usr/include /usr/include/aarch-linux-gnu)
+set(TensorRT_INCLUDE_DIRS /usr/include /usr/include/aarch64-linux-gnu)
 set(TensorRT_LIBRARIES /usr/lib/aarch64-linux-gnu)
 
 message(STATUS "TensorRT Libs: \n${TensorRT_LIBRARIES}\n")
@@ -70,7 +70,7 @@ add_executable(yolo_detector_node
     src/yolo26.cpp
 )
 target_link_directories(yolo_detector_node PUBLIC ${ALL_LIBS})
-target_link_libraries(yolo_detector_node PRIVATE nvinfer nvinfer_plugin cudart ${OpenCV_LIBS})
+target_link_libraries(yolo_detector_node nvinfer nvinfer_plugin cudart ${OpenCV_LIBS})
 ament_target_dependencies(yolo_detector_node
     rclcpp
     sensor_msgs

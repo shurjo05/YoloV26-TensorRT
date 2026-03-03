@@ -1243,3 +1243,51 @@ Parsed CUDA implicit link information from above output:
   implicit fwks: []
 
 
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_47544/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_47544.dir/build.make CMakeFiles/cmTC_47544.dir/build
+gmake[1]: Entering directory '/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_47544.dir/CheckIncludeFile.cxx.o
+/usr/bin/aarch64-linux-gnu-g++   -std=c++17 -O3  -o CMakeFiles/cmTC_47544.dir/CheckIncludeFile.cxx.o -c /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_47544
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_47544.dir/link.txt --verbose=1
+/usr/bin/aarch64-linux-gnu-g++  -std=c++17 -O3  CMakeFiles/cmTC_47544.dir/CheckIncludeFile.cxx.o -o cmTC_47544 
+gmake[1]: Leaving directory '/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp'
+
+
+
+Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD succeeded with the following output:
+Change Dir: /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_2f75d/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_2f75d.dir/build.make CMakeFiles/cmTC_2f75d.dir/build
+gmake[1]: Entering directory '/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_2f75d.dir/src.cxx.o
+/usr/bin/aarch64-linux-gnu-g++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++17 -O3  -o CMakeFiles/cmTC_2f75d.dir/src.cxx.o -c /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_2f75d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2f75d.dir/link.txt --verbose=1
+/usr/bin/aarch64-linux-gnu-g++  -std=c++17 -O3  CMakeFiles/cmTC_2f75d.dir/src.cxx.o -o cmTC_2f75d 
+gmake[1]: Leaving directory '/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+

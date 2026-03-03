@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-J
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -84,6 +94,51 @@ rebuild_cache:
 # Special rule for the target rebuild_cache
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -117,65 +172,155 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named YoloV8rt
+# Target rules for targets named uninstall
 
 # Build rule for target.
-YoloV8rt: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 YoloV8rt
-.PHONY : YoloV8rt
+uninstall: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall
+.PHONY : uninstall
 
 # fast build rule for target.
-YoloV8rt/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/build
-.PHONY : YoloV8rt/fast
+uninstall/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
+.PHONY : uninstall/fast
 
-src/main.o: src/main.cpp.o
-.PHONY : src/main.o
+#=============================================================================
+# Target rules for targets named yolo26_tensorrt_uninstall
+
+# Build rule for target.
+yolo26_tensorrt_uninstall: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 yolo26_tensorrt_uninstall
+.PHONY : yolo26_tensorrt_uninstall
+
+# fast build rule for target.
+yolo26_tensorrt_uninstall/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo26_tensorrt_uninstall.dir/build.make CMakeFiles/yolo26_tensorrt_uninstall.dir/build
+.PHONY : yolo26_tensorrt_uninstall/fast
+
+#=============================================================================
+# Target rules for targets named yolo_detector_node
+
+# Build rule for target.
+yolo_detector_node: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 yolo_detector_node
+.PHONY : yolo_detector_node
+
+# fast build rule for target.
+yolo_detector_node/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/build
+.PHONY : yolo_detector_node/fast
+
+#=============================================================================
+# Target rules for targets named yolo_standalone
+
+# Build rule for target.
+yolo_standalone: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 yolo_standalone
+.PHONY : yolo_standalone
+
+# fast build rule for target.
+yolo_standalone/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/build
+.PHONY : yolo_standalone/fast
+
+src/main_standalone.o: src/main_standalone.cpp.o
+.PHONY : src/main_standalone.o
 
 # target to build an object file
-src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
+src/main_standalone.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/src/main_standalone.cpp.o
+.PHONY : src/main_standalone.cpp.o
 
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
+src/main_standalone.i: src/main_standalone.cpp.i
+.PHONY : src/main_standalone.i
 
 # target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
+src/main_standalone.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/src/main_standalone.cpp.i
+.PHONY : src/main_standalone.cpp.i
 
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
+src/main_standalone.s: src/main_standalone.cpp.s
+.PHONY : src/main_standalone.s
 
 # target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
+src/main_standalone.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/src/main_standalone.cpp.s
+.PHONY : src/main_standalone.cpp.s
 
-src/yolov8.o: src/yolov8.cpp.o
-.PHONY : src/yolov8.o
+src/ros_detection_bridge.o: src/ros_detection_bridge.cpp.o
+.PHONY : src/ros_detection_bridge.o
 
 # target to build an object file
-src/yolov8.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/src/yolov8.cpp.o
-.PHONY : src/yolov8.cpp.o
+src/ros_detection_bridge.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/ros_detection_bridge.cpp.o
+.PHONY : src/ros_detection_bridge.cpp.o
 
-src/yolov8.i: src/yolov8.cpp.i
-.PHONY : src/yolov8.i
+src/ros_detection_bridge.i: src/ros_detection_bridge.cpp.i
+.PHONY : src/ros_detection_bridge.i
 
 # target to preprocess a source file
-src/yolov8.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/src/yolov8.cpp.i
-.PHONY : src/yolov8.cpp.i
+src/ros_detection_bridge.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/ros_detection_bridge.cpp.i
+.PHONY : src/ros_detection_bridge.cpp.i
 
-src/yolov8.s: src/yolov8.cpp.s
-.PHONY : src/yolov8.s
+src/ros_detection_bridge.s: src/ros_detection_bridge.cpp.s
+.PHONY : src/ros_detection_bridge.s
 
 # target to generate assembly for a file
-src/yolov8.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/src/yolov8.cpp.s
-.PHONY : src/yolov8.cpp.s
+src/ros_detection_bridge.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/ros_detection_bridge.cpp.s
+.PHONY : src/ros_detection_bridge.cpp.s
+
+src/yolo26.o: src/yolo26.cpp.o
+.PHONY : src/yolo26.o
+
+# target to build an object file
+src/yolo26.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/yolo26.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/src/yolo26.cpp.o
+.PHONY : src/yolo26.cpp.o
+
+src/yolo26.i: src/yolo26.cpp.i
+.PHONY : src/yolo26.i
+
+# target to preprocess a source file
+src/yolo26.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/yolo26.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/src/yolo26.cpp.i
+.PHONY : src/yolo26.cpp.i
+
+src/yolo26.s: src/yolo26.cpp.s
+.PHONY : src/yolo26.s
+
+# target to generate assembly for a file
+src/yolo26.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/yolo26.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/src/yolo26.cpp.s
+.PHONY : src/yolo26.cpp.s
+
+src/yolo_detector_node.o: src/yolo_detector_node.cpp.o
+.PHONY : src/yolo_detector_node.o
+
+# target to build an object file
+src/yolo_detector_node.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/yolo_detector_node.cpp.o
+.PHONY : src/yolo_detector_node.cpp.o
+
+src/yolo_detector_node.i: src/yolo_detector_node.cpp.i
+.PHONY : src/yolo_detector_node.i
+
+# target to preprocess a source file
+src/yolo_detector_node.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/yolo_detector_node.cpp.i
+.PHONY : src/yolo_detector_node.cpp.i
+
+src/yolo_detector_node.s: src/yolo_detector_node.cpp.s
+.PHONY : src/yolo_detector_node.s
+
+# target to generate assembly for a file
+src/yolo_detector_node.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/src/yolo_detector_node.cpp.s
+.PHONY : src/yolo_detector_node.cpp.s
 
 # Help Target
 help:
@@ -184,14 +329,28 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... YoloV8rt"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
-	@echo "... src/yolov8.o"
-	@echo "... src/yolov8.i"
-	@echo "... src/yolov8.s"
+	@echo "... test"
+	@echo "... uninstall"
+	@echo "... yolo26_tensorrt_uninstall"
+	@echo "... yolo_detector_node"
+	@echo "... yolo_standalone"
+	@echo "... src/main_standalone.o"
+	@echo "... src/main_standalone.i"
+	@echo "... src/main_standalone.s"
+	@echo "... src/ros_detection_bridge.o"
+	@echo "... src/ros_detection_bridge.i"
+	@echo "... src/ros_detection_bridge.s"
+	@echo "... src/yolo26.o"
+	@echo "... src/yolo26.i"
+	@echo "... src/yolo26.s"
+	@echo "... src/yolo_detector_node.o"
+	@echo "... src/yolo_detector_node.i"
+	@echo "... src/yolo_detector_node.s"
 .PHONY : help
 
 

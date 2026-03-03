@@ -1,0 +1,2 @@
+source;share/yolo26_tensorrt/environment/ament_prefix_path.sh
+source;share/yolo26_tensorrt/environment/path.sh

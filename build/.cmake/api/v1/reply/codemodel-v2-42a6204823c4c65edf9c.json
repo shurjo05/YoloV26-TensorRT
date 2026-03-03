@@ -1,0 +1,88 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Release-2c7a42bab8c7c3c37de5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "yolo26_tensorrt",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Release-81ea80b3565d0f28de7f.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolo26_tensorrt_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolo26_tensorrt_uninstall-Release-70eb7858e0907dd8b291.json",
+					"name" : "yolo26_tensorrt_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolo_detector_node::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolo_detector_node-Release-95d8863e72acdeacc5fb.json",
+					"name" : "yolo_detector_node",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "yolo_standalone::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-yolo_standalone-Release-9acc4a5ecc8ccf06f3fe.json",
+					"name" : "yolo_standalone",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build",
+		"source" : "/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

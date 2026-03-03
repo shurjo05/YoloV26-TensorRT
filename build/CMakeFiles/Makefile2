@@ -63,7 +63,8 @@ CMAKE_BINARY_DIR = /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-J
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/YoloV8rt.dir/all
+all: CMakeFiles/yolo_detector_node.dir/all
+all: CMakeFiles/yolo_standalone.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +72,115 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/YoloV8rt.dir/clean
+clean: CMakeFiles/uninstall.dir/clean
+clean: CMakeFiles/yolo26_tensorrt_uninstall.dir/clean
+clean: CMakeFiles/yolo_detector_node.dir/clean
+clean: CMakeFiles/yolo_standalone.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/YoloV8rt.dir
+# Target rules for target CMakeFiles/uninstall.dir
 
 # All Build rule for target.
-CMakeFiles/YoloV8rt.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles --progress-num=1,2,3 "Built target YoloV8rt"
-.PHONY : CMakeFiles/YoloV8rt.dir/all
+CMakeFiles/uninstall.dir/all: CMakeFiles/yolo26_tensorrt_uninstall.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles --progress-num= "Built target uninstall"
+.PHONY : CMakeFiles/uninstall.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/YoloV8rt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 3
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/YoloV8rt.dir/all
+CMakeFiles/uninstall.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 0
-.PHONY : CMakeFiles/YoloV8rt.dir/rule
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/uninstall.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 0
+.PHONY : CMakeFiles/uninstall.dir/rule
 
 # Convenience name for target.
-YoloV8rt: CMakeFiles/YoloV8rt.dir/rule
-.PHONY : YoloV8rt
+uninstall: CMakeFiles/uninstall.dir/rule
+.PHONY : uninstall
 
 # clean rule for target.
-CMakeFiles/YoloV8rt.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/YoloV8rt.dir/build.make CMakeFiles/YoloV8rt.dir/clean
-.PHONY : CMakeFiles/YoloV8rt.dir/clean
+CMakeFiles/uninstall.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/clean
+.PHONY : CMakeFiles/uninstall.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/yolo26_tensorrt_uninstall.dir
+
+# All Build rule for target.
+CMakeFiles/yolo26_tensorrt_uninstall.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo26_tensorrt_uninstall.dir/build.make CMakeFiles/yolo26_tensorrt_uninstall.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo26_tensorrt_uninstall.dir/build.make CMakeFiles/yolo26_tensorrt_uninstall.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles --progress-num= "Built target yolo26_tensorrt_uninstall"
+.PHONY : CMakeFiles/yolo26_tensorrt_uninstall.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/yolo26_tensorrt_uninstall.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/yolo26_tensorrt_uninstall.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 0
+.PHONY : CMakeFiles/yolo26_tensorrt_uninstall.dir/rule
+
+# Convenience name for target.
+yolo26_tensorrt_uninstall: CMakeFiles/yolo26_tensorrt_uninstall.dir/rule
+.PHONY : yolo26_tensorrt_uninstall
+
+# clean rule for target.
+CMakeFiles/yolo26_tensorrt_uninstall.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo26_tensorrt_uninstall.dir/build.make CMakeFiles/yolo26_tensorrt_uninstall.dir/clean
+.PHONY : CMakeFiles/yolo26_tensorrt_uninstall.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/yolo_detector_node.dir
+
+# All Build rule for target.
+CMakeFiles/yolo_detector_node.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles --progress-num=1,2,3,4 "Built target yolo_detector_node"
+.PHONY : CMakeFiles/yolo_detector_node.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/yolo_detector_node.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 4
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/yolo_detector_node.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 0
+.PHONY : CMakeFiles/yolo_detector_node.dir/rule
+
+# Convenience name for target.
+yolo_detector_node: CMakeFiles/yolo_detector_node.dir/rule
+.PHONY : yolo_detector_node
+
+# clean rule for target.
+CMakeFiles/yolo_detector_node.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_detector_node.dir/build.make CMakeFiles/yolo_detector_node.dir/clean
+.PHONY : CMakeFiles/yolo_detector_node.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/yolo_standalone.dir
+
+# All Build rule for target.
+CMakeFiles/yolo_standalone.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles --progress-num=5,6,7 "Built target yolo_standalone"
+.PHONY : CMakeFiles/yolo_standalone.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/yolo_standalone.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 3
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/yolo_standalone.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/farms/orin_ssd/aphid_object_detection/YoloV8-TensorRT-Jetson_Nano/build/CMakeFiles 0
+.PHONY : CMakeFiles/yolo_standalone.dir/rule
+
+# Convenience name for target.
+yolo_standalone: CMakeFiles/yolo_standalone.dir/rule
+.PHONY : yolo_standalone
+
+# clean rule for target.
+CMakeFiles/yolo_standalone.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/yolo_standalone.dir/build.make CMakeFiles/yolo_standalone.dir/clean
+.PHONY : CMakeFiles/yolo_standalone.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
