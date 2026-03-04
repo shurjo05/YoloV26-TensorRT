@@ -1,4 +1,0 @@
-source;share/yolo26_tensorrt/local_setup.bash
-source;share/yolo26_tensorrt/local_setup.dsv
-source;share/yolo26_tensorrt/local_setup.sh
-source;share/yolo26_tensorrt/local_setup.zsh

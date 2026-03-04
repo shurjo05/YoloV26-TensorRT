@@ -1,0 +1,9 @@
+# TensorRT engines — device-specific, must be built on each target Jetson
+*.engine
+
+# CMake build output
+build/
+
+# Colcon workspace artifacts
+install/
+log/
