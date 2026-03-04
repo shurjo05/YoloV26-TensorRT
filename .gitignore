@@ -7,3 +7,6 @@ build/
 # Colcon workspace artifacts
 install/
 log/
+
+# Standalone test output
+out.jpg

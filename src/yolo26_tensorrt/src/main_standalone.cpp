@@ -12,7 +12,6 @@ using namespace cv;
 
 //#define VIDEO
 
-cv::Size       im_size(640, 640);
 const int      topk        = 100;
 const float    score_thres = 0.25f;
 const float    iou_thres   = 0.65f;
@@ -39,7 +38,7 @@ int main(int argc, char** argv)
     }
     const string engine_file_path = argv[1];
     const string imagepath = argv[2];
-    string output_path = "out.jpg";
+    string output_path = "../../../out.jpg";
     for (int argi = 3; argi < argc; ++argi) {
         if (string(argv[argi]) == "--no-gui") {
             if (argi + 1 < argc && string(argv[argi + 1]).rfind("--", 0) != 0) {
@@ -92,7 +91,7 @@ int main(int argc, char** argv)
             break;
         }
 #endif
-        yolo26->CopyFromMat(image, im_size);
+        yolo26->CopyFromMat(image);
 
         std::vector<Object> objs;
 
