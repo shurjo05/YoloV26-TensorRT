@@ -1,0 +1,7 @@
+build/
+install/
+log/
+*.engine
+.git/
+.venv/
+**/__pycache__/
