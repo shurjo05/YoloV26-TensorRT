@@ -1,0 +1,47 @@
+# -------------------------------------------------------------------------------------
+# Arducam AR0234 (UC-788) Camera Parameters
+#
+# The camera is a Luxonis OAK-D PoE with an Arducam AR0234 (UC-788) sensor module.
+# It connects over Ethernet at 169.100.100.200.
+#
+# Pipeline is RGB-only — stereo and IMU are not used because the sensor module
+# swap means the factory stereo calibration is not valid.
+#
+# The custom calibration file is injected at launch time (see arducam_inference.launch.py)
+# because depthai_ros_driver requires an absolute file:// path at runtime.
+#
+# WATCHLIST:
+#   - i_set_isp_scale: false — do not rescale; keep native AR0234 resolution
+# -------------------------------------------------------------------------------------
+
+/arducam:
+  ros__parameters:
+    camera:
+      i_pipeline_type: RGB
+      i_ip: '169.254.1.222'
+      i_mx_id: '14442C1001B736D200'
+      i_usb_speed: SUPER_PLUS
+      i_usb_port_id: ''
+      i_enable_imu: false
+      i_enable_ir: false
+      i_laser_dot_brightness: 0
+      i_floodlight_brightness: 0
+      i_pipeline_dump: false
+      i_calibration_dump: false
+      i_external_calibration_path: ''
+    rgb:
+      i_board_socket_id: 0
+      i_fps: 30.0
+      i_resolution: '1080P'
+      i_width: 1920
+      i_height: 1080
+      i_set_isp_scale: false
+      i_publish_topic: true
+      i_interleaved: false
+      i_low_bandwidth: false
+      i_low_bandwidth_quality: 50
+      i_max_q_size: 30
+      r_set_man_exposure: false
+      r_set_man_focus: false
+      r_set_man_whitebalance: false
+    use_sim_time: false

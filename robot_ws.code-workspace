@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../../isaac_ros_ws"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../perception_ws"
+		},
+		{
+			"path": "../../hardware_ws"
+		}
+	],
+	"settings": {}
+}

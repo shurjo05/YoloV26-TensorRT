@@ -1,0 +1,26 @@
+image_width: 1920
+image_height: 1200
+camera_name: arducam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1188.42726,    0.     ,  950.07195,
+            0.     , 1202.73969,  561.30404,
+            0.     ,    0.     ,    1.     ]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.042264, 0.001751, -0.010125, -0.001833, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1239.35291,    0.     ,  945.97879,    0.     ,
+            0.     , 1245.36145,  546.55102,    0.     ,
+            0.     ,    0.     ,    1.     ,    0.     ]

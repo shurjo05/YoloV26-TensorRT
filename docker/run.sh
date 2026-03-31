@@ -7,6 +7,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 docker run -it --rm \
     --runtime nvidia \
+    --privileged \
     --network host \
     -v "$REPO_ROOT":/workspace \
-    aphid-inference
+    aphid

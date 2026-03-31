@@ -97,21 +97,21 @@ Expected: `class_id: aphid`, `score: 0.25+`, bbox center + size populated.
 
 ---
 
-### B — Full pipeline with OAK camera
+### B — Full pipeline with Arducam camera
 
-Use this when the OAK camera is physically connected. Launches the OAK driver, YOLO26 node, and DetectionToPointNode together.
+Use this when the Arducam AR0234 (UC-788) is connected via the OAK-D PoE box over Ethernet. Launches the depthai driver, YOLO26 node, and DetectionToPointNode together.
 
-**Requires:** `ros-humble-depthai-ros-driver` installed on the host or inside the container.
+**Requires:** `ros-humble-depthai-ros-driver` installed inside the container (already in the Dockerfile).
 
 ```bash
 # Inside container
 colcon build && source install/setup.bash
-ros2 launch yolo26_tensorrt oak_inference.launch.py
+ros2 launch yolo26_tensorrt arducam_inference.launch.py
 ```
 
 Override object height or world frame at launch time:
 ```bash
-ros2 launch yolo26_tensorrt oak_inference.launch.py \
+ros2 launch yolo26_tensorrt arducam_inference.launch.py \
   object_height:=0.004 \
   world_frame_id:=base_link
 ```
@@ -122,11 +122,11 @@ ros2 topic echo /detection_to_point_node/world_poses
 ```
 Expected: `PoseArray` with `position.z` values representing distance in metres.
 
-> **OAK frame ID gotcha:** If DetectionToPointNode isn't publishing, check that the static TF frame ID in `oak_inference.launch.py` matches what the OAK driver actually publishes. Run:
+> **Frame ID gotcha:** If DetectionToPointNode isn't publishing, check that the static TF frame ID in `arducam_inference.launch.py` matches what the depthai driver actually publishes. Run:
 > ```bash
-> ros2 topic echo /oak/rgb/camera_info --once
+> ros2 topic echo /arducam/rgb/camera_info --once
 > ```
-> and check `header.frame_id`. Update the `child_frame_id` in the static TF node in `oak_inference.launch.py` if they don't match.
+> and check `header.frame_id`. Update the `child_frame_id` in the static TF node in `arducam_inference.launch.py` if they don't match.
 
 ---
 

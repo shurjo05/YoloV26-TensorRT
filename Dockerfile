@@ -19,8 +19,12 @@ RUN apt-get update && apt-get -o Dpkg::Options::="--force-overwrite" install -y 
     ros-humble-visualization-msgs \
     ros-humble-rclcpp-components \
     python3-colcon-common-extensions \
+    ros-humble-depthai-ros-driver \
+    ros-humble-depthai-ros \
+    ros-humble-camera-calibration \
     libnvinfer-dev \
     libnvinfer-plugin-dev \
+    iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
 # Auto-source ROS2 in every shell session.
