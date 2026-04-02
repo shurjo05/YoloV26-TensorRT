@@ -26,7 +26,8 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
+from launch_ros.actions import ComposableNodeContainer, Node
+from launch_ros.descriptions import ComposableNode
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -50,16 +51,35 @@ def generate_launch_description():
         description='Target TF frame for world-coordinate output'
     )
 
-    # --- Arducam AR0234 via OAK-D PoE (depthai_ros_driver) ---
-    arducam_camera = Node(
-        package='depthai_ros_driver',
-        executable='camera_node',
-        name='arducam',
-        parameters=[arducam_params, {
-            'rgb.i_calibration_file': calibration,
-        }],
-        output='screen',
+    # --- Arducam AR0234 via OAK-FFC-4P-POE (Python depthai publisher) ---
+    # Uses Python depthai directly — depthai_ros_driver C++ segfaults on this device.
+    depthai_node = ComposableNode(
+        package="depthai_ros_driver",
+        plugin="depthai_ros_driver::Camera",
+        name="oak",
+        parameters=[
+            # cameras_params_file,
+            {
+                #'camera.i_pipeline_type': 'CamArray',
+                "camera.i_pipeline_type": "RGB",
+                "camera.i_ip": "169.254.1.222",
+                "rgb.i_board_socket_id": 0,  # CAM_A on OAK-D PoE
+                "rgb.i_set_isp_scale": False,
+                #"rgb.i_calibration_file": "file:///workspaces/isaac_ros-dev/camera_calibration_data/arducam_ar0234.yaml",
+            },
+        ],
     )
+
+    container = ComposableNodeContainer(
+        name="depthai_container",
+        namespace="",
+        package="rclcpp_components",
+        executable="component_container",
+        composable_node_descriptions=[depthai_node],
+        output="screen",
+        arguments=['--ros-args', '--log-level', 'debug']
+    )
+
 
     # --- YOLO26 Inference Node ---
     yolo_node = Node(
@@ -91,6 +111,15 @@ def generate_launch_description():
         output='screen',
     )
 
+    # --- Foxglove Bridge --- WebSocket on port 8765 for Foxglove Studio ---
+    foxglove = Node(
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        name='foxglove_bridge',
+        parameters=[{'port': 8765}],
+        output='screen',
+    )
+
     # --- Static TF: base_link -> arducam optical frame ---
     # NOTE: verify the actual frame ID published by depthai with:
     #   ros2 topic echo /arducam/rgb/camera_info --once
@@ -111,8 +140,10 @@ def generate_launch_description():
     return LaunchDescription([
         object_height_arg,
         world_frame_arg,
-        arducam_camera,
+        #arducam_camera,
+        container,
         yolo_node,
         detection_to_point_node,
         static_tf,
+        foxglove,
     ])

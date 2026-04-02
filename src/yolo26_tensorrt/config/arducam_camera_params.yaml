@@ -14,12 +14,12 @@
 #   - i_set_isp_scale: false — do not rescale; keep native AR0234 resolution
 # -------------------------------------------------------------------------------------
 
-/arducam:
+/oak:
   ros__parameters:
     camera:
       i_pipeline_type: RGB
       i_ip: '169.254.1.222'
-      i_mx_id: '14442C1001B736D200'
+      i_mx_id: ''
       i_usb_speed: SUPER_PLUS
       i_usb_port_id: ''
       i_enable_imu: false
@@ -32,9 +32,9 @@
     rgb:
       i_board_socket_id: 0
       i_fps: 30.0
-      i_resolution: '1080P'
+      i_resolution: '1200P'
       i_width: 1920
-      i_height: 1080
+      i_height: 1200
       i_set_isp_scale: false
       i_publish_topic: true
       i_interleaved: false

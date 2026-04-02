@@ -10,4 +10,7 @@ docker run -it --rm \
     --privileged \
     --network host \
     -v "$REPO_ROOT":/workspace \
+    -v /usr/src/tensorrt:/usr/src/tensorrt:ro \
+    -v /usr/lib/aarch64-linux-gnu:/host-trt-lib:ro \
+    -v /usr/include/aarch64-linux-gnu:/host-trt-include:ro \
     aphid

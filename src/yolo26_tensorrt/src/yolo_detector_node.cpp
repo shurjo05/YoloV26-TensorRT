@@ -40,8 +40,6 @@ public:
      *   - engine_file_path   (string)   Path to the TensorRT .engine file.
      *   - confidence_threshold (double) Minimum detection confidence (default 0.25).
      *   - iou_threshold       (double)  IoU threshold (default 0.65, unused by NMS-free model).
-     *   - input_width         (int)     Network input width  (default 640).
-     *   - input_height        (int)     Network input height (default 640).
      *   - class_names         (string[]) Label list indexed by class ID (default ["aphid"]).
      *   - topk                (int)     Max detections to keep (default 100).
      */
@@ -52,8 +50,6 @@ public:
         this->declare_parameter<std::string>("engine_file_path", "");
         this->declare_parameter<double>("confidence_threshold", 0.25);
         this->declare_parameter<double>("iou_threshold", 0.65);
-        this->declare_parameter<int>("input_width", 640);
-        this->declare_parameter<int>("input_height", 640);
         this->declare_parameter<std::vector<std::string>>("class_names", {"aphid"});
         this->declare_parameter<int>("topk", 100);
 
@@ -61,12 +57,8 @@ public:
         std::string engine_path = this->get_parameter("engine_file_path").as_string();
         conf_threshold_ = this->get_parameter("confidence_threshold").as_double();
         iou_threshold_  = this->get_parameter("iou_threshold").as_double();
-        int input_w     = this->get_parameter("input_width").as_int();
-        int input_h     = this->get_parameter("input_height").as_int();
         auto names      = this->get_parameter("class_names").as_string_array();
         topk_           = this->get_parameter("topk").as_int();
-
-        input_size_ = cv::Size(input_w, input_h);
 
         if (engine_path.empty()) {
             RCLCPP_FATAL(this->get_logger(), "engine_file_path parameter is required");
@@ -130,7 +122,7 @@ private:
             cv::Mat frame = RosDetectionBridge::imageMsgToMat(msg);
 
             // Inference
-            yolo26_->CopyFromMat(frame, input_size_);
+            yolo26_->CopyFromMat(frame);
             yolo26_->Infer();
 
             std::vector<det::Object> objs;
@@ -168,7 +160,6 @@ private:
     float conf_threshold_;
     float iou_threshold_;
     int   topk_;
-    cv::Size input_size_;
 
     // Frame dropping flag (atomic for thread safety)
     std::atomic<bool> is_processing_;

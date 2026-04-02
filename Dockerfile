@@ -18,6 +18,7 @@ RUN apt-get update && apt-get -o Dpkg::Options::="--force-overwrite" install -y 
     ros-humble-tf2-geometry-msgs \
     ros-humble-visualization-msgs \
     ros-humble-rclcpp-components \
+    ros-humble-foxglove-bridge \
     python3-colcon-common-extensions \
     ros-humble-depthai-ros-driver \
     ros-humble-depthai-ros \
@@ -26,6 +27,17 @@ RUN apt-get update && apt-get -o Dpkg::Options::="--force-overwrite" install -y 
     libnvinfer-plugin-dev \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Python depthai for the arducam_publisher.py ROS2 node.
+# depthai_ros_driver C++ segfaults on the OAK-FFC-4P-POE so we use Python depthai directly.
+RUN pip3 install depthai==2.31.1 -i https://pypi.org/simple/
+
+# Install prerequisites
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && apt-get install -y \
+    gosu \
+    sudo \
+    udev
 
 # Auto-source ROS2 in every shell session.
 # Also source the colcon install overlay if it exists (i.e. after colcon build inside container).

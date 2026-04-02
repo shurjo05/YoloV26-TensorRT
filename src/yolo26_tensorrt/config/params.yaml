@@ -3,7 +3,5 @@ yolo_detector_node:
     engine_file_path: "/workspace/src/yolo26_tensorrt/models/yolo26n-aphid.engine"
     confidence_threshold: 0.25
     iou_threshold: 0.65
-    input_width: 640
-    input_height: 640
     class_names: ["aphid"]
     topk: 100
