@@ -20,8 +20,9 @@ RUN apt-get update && apt-get -o Dpkg::Options::="--force-overwrite" install -y 
     ros-humble-rclcpp-components \
     ros-humble-foxglove-bridge \
     python3-colcon-common-extensions \
-    ros-humble-depthai-ros-driver \
-    ros-humble-depthai-ros \
+    # ros-humble-depthai-ros-driver \
+    # ros-humble-depthai-ros \
+    ros-humble-depthai-ros-v3 \
     ros-humble-camera-calibration \
     libnvinfer-dev \
     libnvinfer-plugin-dev \

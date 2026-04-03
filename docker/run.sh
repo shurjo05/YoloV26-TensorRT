@@ -13,4 +13,5 @@ docker run -it --rm \
     -v /usr/src/tensorrt:/usr/src/tensorrt:ro \
     -v /usr/lib/aarch64-linux-gnu:/host-trt-lib:ro \
     -v /usr/include/aarch64-linux-gnu:/host-trt-include:ro \
+    -v /dev:/dev \
     aphid
