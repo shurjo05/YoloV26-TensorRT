@@ -34,7 +34,7 @@ public:
      * @param msg Incoming ROS image message.
      * @return cv::Mat BGR image ready for inference.
      */
-    static cv::Mat imageMsgToMat(const sensor_msgs::msg::Image::SharedPtr& msg);
+    static cv::Mat imageMsgToMat(const sensor_msgs::msg::Image::ConstSharedPtr& msg);
 
     /**
      * @brief Convert an OpenCV BGR Mat to a ROS Image message.

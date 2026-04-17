@@ -1,0 +1,28 @@
+rtdetr_detector_node:
+  ros__parameters:
+    # Path to the TensorRT .engine file. Build from ONNX via scripts/build_engine.sh.
+    engine_file_path: "/workspace/src/rtdetr_tensorrt/models/rtdetrsp3.engine"
+
+    # Minimum detection confidence to keep. RT-DETR scores are typically tighter than
+    # YOLO — 0.25 is a reasonable starting point. Lower (e.g. 0.05) for debugging.
+    confidence_threshold: 0.25
+
+    # Class labels indexed by class ID. The rtdetrsp3 model was trained on aphids_ivan.
+    class_names: ["aphid"]
+
+    # Max detections per frame.
+    topk: 100
+
+    # Per-channel mean/std used during training (from isaac_ros sly_camera_bringup
+    # rtdetr_bag.launch.py). Applied as (pixel/255 - mean) / stddev on RGB input.
+    image_mean:   [0.2377, 0.3481, 0.3058]
+    image_stddev: [0.2299, 0.2375, 0.2250]
+
+    # Camera is physically mounted upside down — rotate 180° before inference so
+    # the model sees frames matching its training orientation.
+    rotate_180: true
+
+    # Optional class filter — leave unset to allow all classes.
+    # ROS2 can't infer the type of an empty YAML list, so we don't set it here;
+    # the C++ default (empty string array) is used.
+    # filter_classes: ["aphid"]

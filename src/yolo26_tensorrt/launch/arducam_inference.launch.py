@@ -51,7 +51,7 @@ def generate_launch_description():
     )
 
     # --- Arducam AR0234 via OAK-FFC-4P-POE (Python depthai publisher) ---
-    # depthai_ros_driver C++ (v2 and v3) segfaults on OAK-FFC-4P-POE.
+    # depthai_ros_driver C++ (v2 and v3) cannot find the device on OAK-FFC-4P-POE.
     # Python depthai connects directly via IP and publishes /arducam/rgb/image_raw.
     depthai_node = Node(
         package="yolo26_tensorrt",
@@ -70,6 +70,7 @@ def generate_launch_description():
         parameters=[yolo_params],
         remappings=[
             ('image_raw', '/arducam/rgb/image_raw'),
+            ('image_raw/compressed', '/arducam/rgb/image_raw/compressed'),
         ],
         output='screen',
     )
@@ -101,19 +102,56 @@ def generate_launch_description():
         output='screen',
     )
 
-    # --- Static TF: base_link -> arducam optical frame ---
-    # NOTE: verify the actual frame ID published by depthai with:
-    #   ros2 topic echo /arducam/rgb/camera_info --once
-    # and check header.frame_id. Update child frame below if it differs.
-    static_tf = Node(
+    # --- Static TF: body → base_link ---
+    # The Box robot URDF publishes 'body' as its root frame, but the rest of the
+    # stack (nav2, localization, detection) expects 'base_link'. This zero-offset
+    # identity bridge makes both conventions work without modifying hardware_ws.
+    static_tf_body_to_base = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
-        name='camera_to_base_tf',
+        name='body_to_base_link_tf',
         arguments=[
-            '0', '0', '0',
-            '0', '0', '0',
-            'base_link',
-            'arducam_rgb_camera_optical_frame',
+            '--x', '0', '--y', '0', '--z', '0',
+            '--roll', '0', '--pitch', '0', '--yaw', '0',
+            '--frame-id',       'body',
+            '--child-frame-id', 'base_link',
+        ],
+        output='screen',
+    )
+
+    # --- Static TF: base_link → camera_link ---
+    # Physical mount offset: 0.398m forward, 0.115m right, 0.222m up.
+    # Yaw -90° because camera faces right (+X of robot = -90° yaw in base_link).
+    static_tf_base_to_camera = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='base_to_camera_tf',
+        arguments=[
+            '--x',     '0.115',    # 4.538in forward
+            '--y',     '-0.398',   # 15.677in to the right
+            '--z',     '0.222',    # 8.732in up
+            '--roll',  '0',
+            '--pitch', '0',
+            '--yaw',   '-1.5708',  # camera faces right
+            '--frame-id',       'base_link',
+            '--child-frame-id', 'camera_link',
+        ],
+        output='screen',
+    )
+
+    # --- Static TF: camera_link → arducam_rgb_camera_optical_frame ---
+    # Standard ROS optical frame convention: X right, Y down, Z forward.
+    static_tf_camera_to_optical = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='camera_to_optical_tf',
+        arguments=[
+            '--x', '0', '--y', '0', '--z', '0',
+            '--roll',  '-1.5708',
+            '--pitch', '0',
+            '--yaw',   '-1.5708',
+            '--frame-id',       'camera_link',
+            '--child-frame-id', 'arducam_rgb_camera_optical_frame',
         ],
         output='screen',
     )
@@ -124,6 +162,8 @@ def generate_launch_description():
         depthai_node,
         yolo_node,
         detection_to_point_node,
-        static_tf,
+        static_tf_body_to_base,
+        static_tf_base_to_camera,
+        static_tf_camera_to_optical,
         foxglove,
     ])

@@ -27,6 +27,11 @@ RUN apt-get update && apt-get -o Dpkg::Options::="--force-overwrite" install -y 
     libnvinfer-dev \
     libnvinfer-plugin-dev \
     iputils-ping \
+    git \
+    libasio-dev \
+    libtinyxml2-dev \
+    libssl-dev \
+    ros-humble-micro-ros-msgs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python depthai for the arducam_publisher.py ROS2 node.

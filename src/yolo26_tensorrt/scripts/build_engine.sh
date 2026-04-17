@@ -35,6 +35,7 @@ echo "  Engine: $ENGINE_FILE"
 echo "  (First run takes 5-15 minutes due to layer profiling)"
 echo ""
 
+
 "$TRTEXEC" \
     --onnx="$ONNX_FILE" \
     --saveEngine="$ENGINE_FILE" \

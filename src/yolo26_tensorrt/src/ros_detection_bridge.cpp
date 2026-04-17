@@ -20,7 +20,7 @@
  * @param msg Incoming ROS image message (any encoding cv_bridge can handle).
  * @return cv::Mat BGR image ready for inference preprocessing.
  */
-cv::Mat RosDetectionBridge::imageMsgToMat(const sensor_msgs::msg::Image::SharedPtr& msg)
+cv::Mat RosDetectionBridge::imageMsgToMat(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 {
     cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
     return cv_ptr->image;

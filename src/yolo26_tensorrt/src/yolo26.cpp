@@ -322,6 +322,38 @@ void YOLO26::Infer()
 }
 //----------------------------------------------------------------------------------------
 /**
+ * @brief Get raw pointer to primary output tensor (host buffer). Debug accessor.
+ */
+const float* YOLO26::GetPrimaryOutputPtr() const
+{
+    if (this->primary_output_binding_index < 0 ||
+        this->primary_output_binding_index >= static_cast<int>(this->host_ptrs.size())) {
+        return nullptr;
+    }
+    return static_cast<const float*>(this->host_ptrs[this->primary_output_binding_index]);
+}
+//----------------------------------------------------------------------------------------
+/**
+ * @brief Get tuple size (last dimension) of the primary output tensor. Debug accessor.
+ */
+int YOLO26::GetPrimaryTupleSize() const
+{
+    const auto& dims = this->primary_output_dims;
+    if (dims.nbDims < 2) return 0;
+    return static_cast<int>(dims.d[dims.nbDims - 1]);
+}
+//----------------------------------------------------------------------------------------
+/**
+ * @brief Get number of detection rows in primary output (total_elements / tuple_size).
+ */
+size_t YOLO26::GetPrimaryDetCount() const
+{
+    const int t = GetPrimaryTupleSize();
+    if (t <= 0) return 0;
+    return this->primary_output_elements / static_cast<size_t>(t);
+}
+//----------------------------------------------------------------------------------------
+/**
  * @brief Infer class count for YOLO26 end-to-end tuple outputs.
  *
  * @return Detected class count, or 0 when class count cannot be inferred.

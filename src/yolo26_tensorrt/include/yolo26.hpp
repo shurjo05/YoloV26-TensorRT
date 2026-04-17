@@ -122,6 +122,12 @@ class YOLO26 {
         /// Class label names, indexed by class ID. Default: {"aphid"}.
         std::vector<std::string> class_names;
 
+        // DEBUG accessors: expose primary output tensor for raw inspection.
+        // Returns nullptr / 0 if no primary output is available.
+        const float* GetPrimaryOutputPtr() const;
+        int GetPrimaryTupleSize() const;
+        size_t GetPrimaryDetCount() const;
+
     private:
         //--------------------------------------------------------------------------------
         // TensorRT objects

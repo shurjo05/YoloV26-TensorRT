@@ -9,15 +9,21 @@
 # Python depthai connects successfully; the C++ driver does not.
 #
 # Publishes:
-#   /arducam/rgb/image_raw   (sensor_msgs/Image,      RGB8, 960x600)
-#   /arducam/rgb/camera_info (sensor_msgs/CameraInfo, calibration from yaml values)
+#   /arducam/rgb/image_raw/compressed (sensor_msgs/CompressedImage, JPEG, 960x600)
+#   /arducam/rgb/camera_info          (sensor_msgs/CameraInfo, calibration values)
+#
+# Publishes JPEG-compressed frames instead of raw to reduce per-frame data from
+# ~1.7 MB to ~40 KB, which is necessary to achieve acceptable fps from Python.
+# The yolo_detector_node subscribes via image_transport which decompresses
+# transparently before passing frames to the inference callback.
 # -------------------------------------------------------------------------------------
 
 import threading
 
+import cv2
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.msg import CompressedImage, CameraInfo
 
 import depthai as dai
 import numpy as np
@@ -34,8 +40,8 @@ class ArducamPublisher(Node):
         ip  = self.get_parameter('ip').get_parameter_value().string_value
         fps = self.get_parameter('fps').get_parameter_value().double_value
 
-        self._image_pub = self.create_publisher(Image,      '/arducam/rgb/image_raw',   10)
-        self._info_pub  = self.create_publisher(CameraInfo, '/arducam/rgb/camera_info', 10)
+        self._image_pub = self.create_publisher(CompressedImage, '/arducam/rgb/image_raw/compressed', 10)
+        self._info_pub  = self.create_publisher(CameraInfo,      '/arducam/rgb/camera_info',          10)
         self._camera_info = self._build_camera_info()
 
         pipeline = dai.Pipeline()
@@ -60,7 +66,7 @@ class ArducamPublisher(Node):
         self._running = True
         self._thread = threading.Thread(target=self._capture_loop, daemon=True)
         self._thread.start()
-        self.get_logger().info(f'Arducam publisher connected to {ip} at {fps} fps')
+        self.get_logger().info(f'Arducam publisher connected to {ip} at {fps} fps (JPEG compressed)')
 
     # ---------------------------------------------------------------------------------
 
@@ -73,19 +79,20 @@ class ArducamPublisher(Node):
 
     def _publish_frame(self, frame_data):
 
-        frame = frame_data.getCvFrame()   # numpy array, BGR ordering from depthai
-        frame = frame[:, :, ::-1]         # BGR → RGB (reverse channel axis)
+        frame = frame_data.getCvFrame()   # numpy array, BGR ordering (OpenCV convention)
         stamp = self.get_clock().now().to_msg()
 
-        img_msg              = Image()
+        # JPEG-encode for publishing — keeps frame size ~40KB vs ~1.7MB raw, which is
+        # necessary for the Python publisher to achieve acceptable fps (see Issue 25).
+        # Rotation is handled in yolo_detector_node.cpp before inference, not here.
+        # image_transport decompresses before the frame reaches the detector.
+        _, encoded = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+        img_msg              = CompressedImage()
         img_msg.header.stamp = stamp
         img_msg.header.frame_id = 'arducam_rgb_camera_optical_frame'
-        img_msg.height       = frame.shape[0]
-        img_msg.width        = frame.shape[1]
-        img_msg.encoding     = 'rgb8'
-        img_msg.is_bigendian = False
-        img_msg.step         = frame.shape[1] * 3
-        img_msg.data         = frame.tobytes()
+        img_msg.format       = 'jpeg'
+        img_msg.data         = encoded.tobytes()
 
         self._camera_info.header.stamp = stamp
 
